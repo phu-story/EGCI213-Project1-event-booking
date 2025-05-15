@@ -1,0 +1,7 @@
+code, name,                 unit price
+R1,   Meeting Room Small,    8000
+R2,   Meeting Room Medium,  11000
+R3,   Meeting Room Large,   18000
+M1,   Coffee Break,           100
+M2,   Lunch,                  450
+M3,   Dinner,                 600
