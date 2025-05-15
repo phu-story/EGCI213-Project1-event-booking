@@ -107,7 +107,9 @@ public class Booking {
 
         roomTotal = (roomTotal * 1.1) * 1.07;
 
-        System.out.println("Total room price++: " + roomTotal);
+        //System.out.println("Total room price++: " + roomTotal);
+        String stringRoomTotal =  "total room price++";
+        System.out.printf("             %-20s  =   %,10.2f \n", stringRoomTotal, roomTotal);
 
         for (int i = 0; i < mealPerPersonPerDay.length; i++) {
             String mealCode = mealCodes[i];
@@ -121,13 +123,17 @@ public class Booking {
             }
         }
 
-        System.out.println("Total meal price: " + mealTotal);
+       // System.out.println("Total meal price: " + mealTotal);
+        String stringMealTotal =  "total meal price";
+        System.out.printf("             %-20s  =   %,10.2f \n", stringMealTotal, mealTotal);
 
         double subTotal = roomTotal + mealTotal;
         double discountPercent = 0;
         double discountAmount = 0;
 
-        System.out.println("Sub total: " + subTotal);
+        //System.out.println("Sub total: " + subTotal);
+        String stringSubTotal =  "sub-total";
+        System.out.printf("             %-20s  =   %,10.2f \n", stringSubTotal, subTotal);
 
         for (Discount discount : discounts) {
             if (subTotal >= discount.getMinSubTotal()) {
@@ -136,9 +142,14 @@ public class Booking {
             }
         }
 
-        System.out.println("Discount percent: " + discountPercent);
-        System.out.println("Discount amount: " + discountAmount);
-        System.out.println("Total after discount: " + (subTotal - discountAmount));
+        //System.out.println("Discount percent: " + discountPercent);
+        //System.out.println("Discount amount: " + discountAmount);
+        //System.out.println("Total after discount: " + (subTotal - discountAmount));
+        String stringDiscount =  "discount";
+        String stringTotal =  "total";
+        if(discountPercent==0) System.out.printf("             %-20s  =   %,10.2f \n",stringDiscount, discountAmount);
+        else System.out.printf("             %-10s%-10.1f  =   %,10.2f \n",stringDiscount, discountPercent, discountAmount);
+        System.out.printf("             %-20s  =   %,10.2f \n",stringTotal, (subTotal - discountAmount));
 
         this.totalAmount = (subTotal - discountAmount);
     }

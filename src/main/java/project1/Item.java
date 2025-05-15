@@ -36,7 +36,12 @@ public class Item {
         return unitPrice;
     }
 
+    public double getPriceWithRate() {
+        return unitPrice*1.1*1.07;
+    }
+
     public ItemType getItemType() {
         return itemType;
     }
+
 }
