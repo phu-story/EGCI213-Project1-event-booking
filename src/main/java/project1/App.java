@@ -23,14 +23,14 @@ public class App {
         }
 
         for (Item item : items) {
-            if (item.getCode().startsWith("R")) {
+            if (item.getItemType() == ItemType.ROOM) {
                 System.out.printf("%s, %-19s    rate (per day) = %,9.2f    rate++ = %,9.2f\n", item.getCode(), item.getName(), item.getUnitPrice(), item.getPriceWithRate());
             }
         }
 
         System.out.println("");
         for (Item item : items) {
-            if (item.getCode().startsWith("M")) {
+            if (item.getItemType() == ItemType.MEAL) {
                 System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(), item.getUnitPrice());
             }
         }
