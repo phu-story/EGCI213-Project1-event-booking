@@ -27,12 +27,14 @@ public class App {
                 System.out.printf("%s, %-19s    rate (per day) = %,9.2f    rate++ = %,9.2f\n", item.getCode(), item.getName(), item.getUnitPrice(), item.getPriceWithRate());
             }
         }
+
         System.out.println("");
         for (Item item : items) {
             if(item.getCode().startsWith("M")){
                 System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(), item.getUnitPrice());
             }
         }
+
         System.out.println("");
         List<Discount> discounts = loadDiscount(discountFileName);
         if (discounts == null) {
@@ -44,9 +46,10 @@ public class App {
             public int compare(Discount d1, Discount d2) {
                 return Double.compare(d2.getDiscountPercent(),d1.getDiscountPercent());
             }
-        }); 
+        });
+
         for (Discount discount : discounts) {
-            System.out.printf("If total bill >= %,10.0f   discount = %4.1f\n", discount.getMinSubTotal(), discount.getDiscountPercent());
+            System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", discount.getMinSubTotal(), discount.getDiscountPercent());
         }
 
         Collections.sort(discounts, new Comparator<Discount>() {
@@ -61,6 +64,7 @@ public class App {
             System.out.println("Failed to load booking.");
             return;
         }
+        
         System.out.println("\n===== Booking Processing =====");
         for (Booking b : booking) {
             int[] roomPerDay = b.getRoomPerDay();

@@ -145,11 +145,14 @@ public class Booking {
         //System.out.println("Discount percent: " + discountPercent);
         //System.out.println("Discount amount: " + discountAmount);
         //System.out.println("Total after discount: " + (subTotal - discountAmount));
-        String stringDiscount =  "discount";
-        String stringTotal =  "total";
-        if(discountPercent==0) System.out.printf("             %-20s  =   %,10.2f \n",stringDiscount, discountAmount);
-        else System.out.printf("             %-10s%-10.1f  =   %,10.2f \n",stringDiscount, discountPercent, discountAmount);
-        System.out.printf("             %-20s  =   %,10.2f \n",stringTotal, (subTotal - discountAmount));
+        if(discountPercent == 0) {
+            System.out.printf("             %-20s  =   %,10.2f \n", "discount", discountAmount);
+        } else {
+            System.out.printf("             %-10s%-10s  =   %,10.2f \n", "discount", String.format("%.1f%%", discountPercent), discountAmount);
+            // System.out.printf("             %-10s%-10.1f  =   %,10.2f \n", "discount", discountPercent, discountAmount);
+        }
+        
+        System.out.printf("             %-20s  =   %,10.2f \n", "total", (subTotal - discountAmount));
 
         this.totalAmount = (subTotal - discountAmount);
     }
