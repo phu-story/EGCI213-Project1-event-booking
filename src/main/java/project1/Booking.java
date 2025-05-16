@@ -1,5 +1,6 @@
 package project1;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Booking {
@@ -49,8 +50,26 @@ public class Booking {
     }
 
     public void calculateTotalAmount(List<Item> items, List<Discount> discounts) {
-        final String[] roomCodes = {"R1", "R2", "R3"};
-        final String[] mealCodes = {"M1", "M2", "M3"};
+        ArrayList<String> roomCodes = new ArrayList<String>();
+        ArrayList<String> mealCodes = new ArrayList<String>();
+
+        for (Item item : items) {
+            if (item.getItemType() == Item.ItemType.ROOM) {
+                roomCodes.add(item.getCode());
+            } else if (item.getItemType() == Item.ItemType.MEAL) {
+                mealCodes.add(item.getCode());
+            }
+        }
+
+        if(roomCodes.size() != roomPerDay.length) {
+            System.out.println("Room codes and room per day length do not match.");
+            return;
+        }
+
+        if(mealCodes.size() != mealPerPersonPerDay.length) {
+            System.out.println("Meal codes and meal per person per day length do not match.");
+            return;
+        }
 
         // double total = 0;
 
@@ -94,7 +113,7 @@ public class Booking {
         double mealTotal = 0;
 
         for (int i = 0; i < roomPerDay.length; i++) {
-            String roomCode = roomCodes[i];
+            String roomCode = roomCodes.get(i);
             int roomCount = roomPerDay[i];
 
             for (Item item : items) {
@@ -112,7 +131,7 @@ public class Booking {
         System.out.printf("             %-20s  =   %,10.2f \n", stringRoomTotal, roomTotal);
 
         for (int i = 0; i < mealPerPersonPerDay.length; i++) {
-            String mealCode = mealCodes[i];
+            String mealCode = mealCodes.get(i);
             int mealCount = mealPerPersonPerDay[i];
 
             for (Item item : items) {
@@ -145,7 +164,7 @@ public class Booking {
         //System.out.println("Discount percent: " + discountPercent);
         //System.out.println("Discount amount: " + discountAmount);
         //System.out.println("Total after discount: " + (subTotal - discountAmount));
-        
+
         if(discountPercent == 0) {
             System.out.printf("             %-20s  =   %,10.2f \n", "discount", discountAmount);
         } else {

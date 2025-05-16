@@ -2,6 +2,7 @@ package project1;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -70,9 +71,8 @@ public class App {
             int[] roomPerDay = b.getRoomPerDay();
             int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
             System.out.printf(
-                "Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = [%d, %d, %d], meals = [%d, %d, %d]\n",
-                b.getBookingId(), b.getCustomerId(), b.getDay(), b.getPerson(), roomPerDay[0], roomPerDay[1],
-                roomPerDay[2], mealPerPersonPerDay[0], mealPerPersonPerDay[1], mealPerPersonPerDay[2]
+                "Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
+                b.getBookingId(), b.getCustomerId(), b.getDay(), b.getPerson(), Arrays.toString(roomPerDay), Arrays.toString(mealPerPersonPerDay)
             );
             // System.out.println("Booking ID: " + b.getBookingId());
             // System.out.println("Customer ID: " + b.getCustomerId());
@@ -100,7 +100,9 @@ public class App {
 
         Collections.sort(customers, new Comparator<Customer>() {
             public int compare(Customer c1, Customer c2) {
-                return Double.compare(c2.getTotalAmount(), c1.getTotalAmount());
+                return Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) != 0 ?
+                    Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) :
+                    c1.getId().compareTo(c2.getId());
             }
         });
 
@@ -109,18 +111,12 @@ public class App {
             // System.out.println("Customer ID: " + c.getId());
             // System.out.println("Total Amount: " + c.getTotalAmount());
             // System.out.println("Bookings:");
-            String out = "    bookings = [";
-            int counter = 0;
+            ArrayList<String> bookingIds = new ArrayList<String>();
             for (Booking b : c.getBookings()) {
-                // System.out.println(" - Booking ID: " + b.getBookingId() + ", Total Amount: "
-                // + b.getTotalAmount());
-                out += b.getBookingId();
-                counter++;
-                if (counter < c.getBookings().size())
-                    out += ", ";
+                bookingIds.add(b.getBookingId());
             }
-            out += "]";
-            System.out.println(out);
+
+            System.out.printf("    bookings = [%s]\n", String.join(", ", bookingIds));
         }
         // System.out.println("===================================\n\n\n");
 
@@ -205,6 +201,17 @@ public class App {
 
     public static List<Booking> loadBooking(String fileName, List<Item> items, List<Discount> discounts) {
         try {
+            int roomCount = 0;
+            int mealCount = 0;
+
+            for (Item item : items) {
+                if (item.getItemType() == ItemType.ROOM) {
+                    roomCount++;
+                } else if (item.getItemType() == ItemType.MEAL) {
+                    mealCount++;
+                }
+            }
+
             File fileData = new File(fileName);
 
             Scanner fileScan = new Scanner(fileData);
@@ -227,7 +234,7 @@ public class App {
                 String customerId = parts[1].trim();
                 int day = Integer.parseInt(parts[2].trim());
 
-                int[] roomPerDay = new int[3];
+                int[] roomPerDay = new int[roomCount];
                 String[] roomPerDayRaw = parts[3].trim().split(":");
                 for (int i = 0; i < roomPerDayRaw.length; i++) {
                     roomPerDay[i] = Integer.parseInt(roomPerDayRaw[i].trim());
@@ -235,7 +242,7 @@ public class App {
 
                 int person = Integer.parseInt(parts[4].trim());
 
-                int[] mealPerPersonPerDay = new int[3];
+                int[] mealPerPersonPerDay = new int[mealCount];
                 String[] mealPerPersonPerDayRaw = parts[5].trim().split(":");
                 for (int i = 0; i < mealPerPersonPerDayRaw.length; i++) {
                     mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim());
