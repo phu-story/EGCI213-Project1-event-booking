@@ -19,6 +19,14 @@ public class Customer {
         return bookings;
     }
 
+    public double getSubTotalAmount() {
+        double subTotal = 0;
+        for (Booking booking : bookings) {
+            subTotal += booking.getSubTotalAmount();
+        }
+        return subTotal;
+    }
+
     public double getTotalAmount() {
         double total = 0;
         for (Booking booking : bookings) {

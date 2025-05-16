@@ -10,6 +10,7 @@ public class Booking {
     private int[] roomPerDay;
     private int person;
     private int[] mealPerPersonPerDay;
+    private double subTotalAmount;
     private double totalAmount;
 
     public Booking(String bookingId, String customerId, int day, int[] roomPerDay, int person, int[] mealPerPersonPerDay) {
@@ -43,6 +44,10 @@ public class Booking {
 
     public int[] getMealPerPersonPerDay() {
         return mealPerPersonPerDay;
+    }
+
+    public double getSubTotalAmount() {
+        return subTotalAmount;
     }
 
     public double getTotalAmount() {
@@ -175,6 +180,7 @@ public class Booking {
 
         System.out.printf("             %-20s  =   %,10.2f \n", "total", total);
 
+        this.subTotalAmount = subTotal;
         this.totalAmount = total;
     }
 }

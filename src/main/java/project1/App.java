@@ -43,21 +43,17 @@ public class App {
             return;
         }
 
-        Collections.sort(discounts, new Comparator<Discount>() {
+        List<Discount> discountsCopy = new ArrayList<>(discounts);
+
+        Collections.sort(discountsCopy, new Comparator<Discount>() {
             public int compare(Discount d1, Discount d2) {
                 return Double.compare(d2.getDiscountPercent(), d1.getDiscountPercent());
             }
         });
 
-        for (Discount discount : discounts) {
+        for (Discount discount : discountsCopy) {
             System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", discount.getMinSubTotal(), discount.getDiscountPercent());
         }
-
-        Collections.sort(discounts, new Comparator<Discount>() {
-            public int compare(Discount d1, Discount d2) {
-                return Double.compare(d1.getDiscountPercent(), d2.getDiscountPercent());
-            }
-        });
 
         System.out.println("");
         List<Booking> booking = loadBooking(bookingFileName, items, discounts);
@@ -107,7 +103,7 @@ public class App {
         });
 
         for (Customer c : customers) {
-            System.out.printf("%-5s>>  total amount = %,13.2f", c.getId(), c.getTotalAmount());
+            System.out.printf("%-5s>>  total amount = %,13.2f", c.getId(), c.getSubTotalAmount());
             // System.out.println("Customer ID: " + c.getId());
             // System.out.println("Total Amount: " + c.getTotalAmount());
             // System.out.println("Bookings:");
