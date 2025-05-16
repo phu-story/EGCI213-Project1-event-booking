@@ -14,7 +14,7 @@ public class App {
     public static void main(String[] args) {
         String path = "src/main/java/project1/input/";
         String itemFileName = path + "items.txt";
-        String bookingFileName = path + "bookings.txt";
+        String bookingFileName = path + "bookings_errors.txt";
         String discountFileName = path + "discounts.txt";
 
         List<Item> items = loadItems(itemFileName);
@@ -25,14 +25,16 @@ public class App {
 
         for (Item item : items) {
             if (item.getItemType() == ItemType.ROOM) {
-                System.out.printf("%s, %-19s    rate (per day) = %,9.2f    rate++ = %,9.2f\n", item.getCode(), item.getName(), item.getUnitPrice(), item.getPriceWithRate());
+                System.out.printf("%s, %-19s    rate (per day) = %,9.2f    rate++ = %,9.2f\n", item.getCode(),
+                        item.getName(), item.getUnitPrice(), item.getPriceWithRate());
             }
         }
 
         System.out.println("");
         for (Item item : items) {
             if (item.getItemType() == ItemType.MEAL) {
-                System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(), item.getUnitPrice());
+                System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(),
+                        item.getUnitPrice());
             }
         }
 
@@ -52,7 +54,8 @@ public class App {
         });
 
         for (Discount discount : discountsCopy) {
-            System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", discount.getMinSubTotal(), discount.getDiscountPercent());
+            System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", discount.getMinSubTotal(),
+                    discount.getDiscountPercent());
         }
 
         System.out.println("");
@@ -67,9 +70,9 @@ public class App {
             int[] roomPerDay = b.getRoomPerDay();
             int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
             System.out.printf(
-                "Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
-                b.getBookingId(), b.getCustomerId(), b.getDay(), b.getPerson(), Arrays.toString(roomPerDay), Arrays.toString(mealPerPersonPerDay)
-            );
+                    "Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
+                    b.getBookingId(), b.getCustomerId(), b.getDay(), b.getPerson(), Arrays.toString(roomPerDay),
+                    Arrays.toString(mealPerPersonPerDay));
             // System.out.println("Booking ID: " + b.getBookingId());
             // System.out.println("Customer ID: " + b.getCustomerId());
             // System.out.println("Day: " + b.getDay());
@@ -96,9 +99,9 @@ public class App {
 
         Collections.sort(customers, new Comparator<Customer>() {
             public int compare(Customer c1, Customer c2) {
-                return Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) != 0 ?
-                    Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) :
-                    c1.getId().compareTo(c2.getId());
+                return Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) != 0
+                        ? Double.compare(c2.getTotalAmount(), c1.getTotalAmount())
+                        : c1.getId().compareTo(c2.getId());
             }
         });
 
@@ -224,31 +227,42 @@ public class App {
                 }
 
                 String line = fileScan.nextLine();
-                String[] parts = line.split(",");
 
-                String bookingId = parts[0].trim();
-                String customerId = parts[1].trim();
-                int day = Integer.parseInt(parts[2].trim());
+                try {
+                    String[] parts = line.split(",");
 
-                int[] roomPerDay = new int[roomCount];
-                String[] roomPerDayRaw = parts[3].trim().split(":");
-                for (int i = 0; i < roomPerDayRaw.length; i++) {
-                    roomPerDay[i] = Integer.parseInt(roomPerDayRaw[i].trim());
+                    String bookingId = parts[0].trim();
+                    String customerId = parts[1].trim();
+                    int day = Integer.parseInt(parts[2].trim());
+
+                    if(day < 1) {
+                        throw new Exception(String.format("For days: \"%d\"", day));
+                    }
+
+                    int[] roomPerDay = new int[roomCount];
+                    String[] roomPerDayRaw = parts[3].trim().split(":");
+                    for (int i = 0; i < roomPerDayRaw.length; i++) {
+                        roomPerDay[i] = Integer.parseInt(roomPerDayRaw[i].trim());
+                    }
+
+                    int person = Integer.parseInt(parts[4].trim());
+
+                    int[] mealPerPersonPerDay = new int[mealCount];
+                    String[] mealPerPersonPerDayRaw = parts[5].trim().split(":");
+                    for (int i = 0; i < mealPerPersonPerDayRaw.length; i++) {
+                        mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim());
+                    }
+
+                    Booking booking = new Booking(bookingId, customerId, day, roomPerDay, person, mealPerPersonPerDay);
+
+                    // booking.calculateTotalAmount(items, discounts);
+
+                    bookings.add(booking);
+                } catch (Exception e) {
+                    System.err.println(e);
+                    System.err.println(line);
+                    continue;
                 }
-
-                int person = Integer.parseInt(parts[4].trim());
-
-                int[] mealPerPersonPerDay = new int[mealCount];
-                String[] mealPerPersonPerDayRaw = parts[5].trim().split(":");
-                for (int i = 0; i < mealPerPersonPerDayRaw.length; i++) {
-                    mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim());
-                }
-
-                Booking booking = new Booking(bookingId, customerId, day, roomPerDay, person, mealPerPersonPerDay);
-
-                // booking.calculateTotalAmount(items, discounts);
-
-                bookings.add(booking);
             }
 
             fileScan.close();
