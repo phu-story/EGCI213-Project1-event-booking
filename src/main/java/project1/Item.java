@@ -37,7 +37,7 @@ public class Item {
     }
 
     public double getPriceWithRate() {
-        return unitPrice*1.1*1.07;
+        return unitPrice * 1.1 * 1.07;
     }
 
     public ItemType getItemType() {
