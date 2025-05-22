@@ -14,112 +14,174 @@ public class App {
     public static void main(String[] args) {
         String path = "src/main/java/project1/input/";
         String itemFileName = path + "items.txt";
-        String bookingFileName = path + "bookings_errors.txt";
+        String bookingFileName = path + "bookings.txt";
         String discountFileName = path + "discounts.txt";
+        boolean[] usableVar = {false, false, false}; // item, discount, booking
+
+        /*===================Item section===================*/
+
+        // Buffer data from items.txt into list
 
         List<Item> items = loadItems(itemFileName);
         if (items == null) {
             System.out.println("Failed to load items.");
-            return;
-        }
-
-        for (Item item : items) {
-            if (item.getItemType() == ItemType.ROOM) {
-                System.out.printf("%s, %-25s%2s Rate (per day) = %,9.2f%2s Rate++ = %,9.2f\n",
-                        item.getCode(),
-                        item.getName(), " ",
-                        item.getUnitPrice(), " ",
-                        item.getPriceWithRate());
+            System.out.println("Customer's booking had not been charged");
+            // return;
+        } else {
+            // Print everything in buffer
+            // Room type section
+            for (Item item : items) {
+                if (item.getItemType() == ItemType.ROOM) {
+                    System.out.printf("%s, %-25s%2s Rate (per day) = %,9.2f%2s Rate++ = %,9.2f\n",
+                            item.getCode(),
+                            item.getName(), " ",
+                            item.getUnitPrice(), " ",
+                            item.getPriceWithRate());
+                }
             }
-        }
 
-        System.out.println("");
-        for (Item item : items) {
-            if (item.getItemType() == ItemType.MEAL) {
-                System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(),
-                        item.getUnitPrice());
+            // Meal menu section
+            System.out.println("");
+            for (Item item : items) {
+                if (item.getItemType() == ItemType.MEAL) {
+                    System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(),
+                            item.getUnitPrice());
+                }
             }
+            usableVar[0] = true;
         }
 
+        
+
+        /*===================Discount Section===================*/
+
+        // Buffer data from discounts.txt
         System.out.println("");
         List<Discount> discounts = loadDiscount(discountFileName);
         if (discounts == null) {
             System.out.println("Failed to load discounts.");
-            return;
-        }
+            System.out.println("No discount has been applied");
+            // return;
+        } else {
+            // Sort discount list first
+            List<Discount> discountsCopy = new ArrayList<>(discounts);
+            Collections.sort(discountsCopy, new Comparator<Discount>() {
+                public int compare(Discount d1, Discount d2) {
+                    return Double.compare(d2.getDiscountPercent(), d1.getDiscountPercent());
+                }
+            });
 
-        List<Discount> discountsCopy = new ArrayList<>(discounts);
-
-        Collections.sort(discountsCopy, new Comparator<Discount>() {
-            public int compare(Discount d1, Discount d2) {
-                return Double.compare(d2.getDiscountPercent(), d1.getDiscountPercent());
+            // Then, print here
+            for (Discount discount : discountsCopy) {
+                System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", 
+                    discount.getMinSubTotal(),
+                    discount.getDiscountPercent()
+                );
             }
-        });
-
-        for (Discount discount : discountsCopy) {
-            System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", discount.getMinSubTotal(),
-                    discount.getDiscountPercent());
+            usableVar[1] = true;
         }
 
+        
+
+        /*===================Booking Section===================*/
+
+        // Load booking file
         System.out.println("");
-        List<Booking> booking = loadBooking(bookingFileName, items, discounts);
+        List<Booking> booking;
+        if (usableVar[1] == false) { // FailSafe: Discount file can't read
+            List<Discount> nonCertainDiscount = new ArrayList<>();
+            List<Item> nonCertainItem = new ArrayList<>();
+            if (usableVar[0] == false) {
+                nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
+            } else nonCertainItem = items;
+            if (usableVar[1] == false) {
+                nonCertainDiscount.add(new Discount(0, 0));
+            } else nonCertainDiscount = discounts;
+            booking = loadBooking(bookingFileName, nonCertainItem, nonCertainDiscount);
+        } else {
+            booking = loadBooking(bookingFileName, items, discounts);
+        }
+
         if (booking == null) {
             System.out.println("Failed to load booking.");
-            return;
+            // return;
+        } else {
+            // Print each booking summarize
+            System.out.println("\n===== Booking Processing =====");
+            for (Booking b : booking) {
+                int[] roomPerDay = b.getRoomPerDay();
+                int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
+                System.out.printf("Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
+                    b.getBookingId(), 
+                    b.getCustomerId(), 
+                    b.getDay(), 
+                    b.getPerson(), 
+                    Arrays.toString(roomPerDay),
+                    Arrays.toString(mealPerPersonPerDay
+                ));
+                // System.out.println("Booking ID: " + b.getBookingId());
+                // System.out.println("Customer ID: " + b.getCustomerId());
+                // System.out.println("Day: " + b.getDay());
+                // System.out.println("Room per day: " + roomPerDay[0] + ", " + roomPerDay[1] +
+                // ", " + roomPerDay[2]);
+                // System.out.println("Person: " + b.getPerson());
+                // System.out.println("Meal per person per day: " + mealPerPersonPerDay[0] + ",
+                // " + mealPerPersonPerDay[1]
+                // + ", " + mealPerPersonPerDay[2]);
+    
+                // Invoice section
+                if (usableVar[0] == false || usableVar[1] == false) {        // FailSafe: Discount file can't read
+                    List<Discount> nonCertainDiscount = new ArrayList<>();
+                    List<Item> nonCertainItem = new ArrayList<>();
+                    if (usableVar[0] == false) {
+                        nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
+                    } else nonCertainItem = items;
+                    if (usableVar[1] == false) {
+                        nonCertainDiscount.add(new Discount(0, 0));
+                    } else nonCertainDiscount = discounts;
+    
+                    b.calculateTotalAmount(nonCertainItem, nonCertainDiscount);
+                } else {
+                    b.calculateTotalAmount(items, discounts);
+                }
+                System.out.println("");
+    
+                // System.out.println("Total Amount: " + b.getTotalAmount());
+            }
         }
 
-        System.out.println("\n===== Booking Processing =====");
-        for (Booking b : booking) {
-            int[] roomPerDay = b.getRoomPerDay();
-            int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
-            System.out.printf(
-                    "Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
-                    b.getBookingId(), b.getCustomerId(), b.getDay(), b.getPerson(), Arrays.toString(roomPerDay),
-                    Arrays.toString(mealPerPersonPerDay));
-            // System.out.println("Booking ID: " + b.getBookingId());
-            // System.out.println("Customer ID: " + b.getCustomerId());
-            // System.out.println("Day: " + b.getDay());
-            // System.out.println("Room per day: " + roomPerDay[0] + ", " + roomPerDay[1] +
-            // ", " + roomPerDay[2]);
-            // System.out.println("Person: " + b.getPerson());
-            // System.out.println("Meal per person per day: " + mealPerPersonPerDay[0] + ",
-            // " + mealPerPersonPerDay[1]
-            // + ", " + mealPerPersonPerDay[2]);
 
-            b.calculateTotalAmount(items, discounts);
-            System.out.println("");
-
-            // System.out.println("Total Amount: " + b.getTotalAmount());
-        }
-
+        // Summarize each customer's booking
         List<Customer> customers = loadCustomer(booking);
         if (customers == null) {
             System.out.println("Failed to load customer.");
-            return;
-        }
+            // return;
+        } else {
+            System.out.println("===== Customer Summary =====");
 
-        System.out.println("===== Customer Summary =====");
+            Collections.sort(customers, new Comparator<Customer>() {
+                public int compare(Customer c1, Customer c2) {
+                    return Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) != 0
+                            ? Double.compare(c2.getTotalAmount(), c1.getTotalAmount())
+                            : c1.getId().compareTo(c2.getId());
+                }
+            });
 
-        Collections.sort(customers, new Comparator<Customer>() {
-            public int compare(Customer c1, Customer c2) {
-                return Double.compare(c2.getTotalAmount(), c1.getTotalAmount()) != 0
-                        ? Double.compare(c2.getTotalAmount(), c1.getTotalAmount())
-                        : c1.getId().compareTo(c2.getId());
+            for (Customer c : customers) {
+                System.out.printf("%-5s>>  total amount = %,13.2f", c.getId(), c.getSubTotalAmount());
+                // System.out.println("Customer ID: " + c.getId());
+                // System.out.println("Total Amount: " + c.getTotalAmount());
+                // System.out.println("Bookings:");
+                ArrayList<String> bookingIds = new ArrayList<String>();
+                for (Booking b : c.getBookings()) {
+                    bookingIds.add(b.getBookingId());
+                }
+
+                System.out.printf("    bookings = [%s]\n", String.join(", ", bookingIds));
             }
-        });
-
-        for (Customer c : customers) {
-            System.out.printf("%-5s>>  total amount = %,13.2f", c.getId(), c.getSubTotalAmount());
-            // System.out.println("Customer ID: " + c.getId());
-            // System.out.println("Total Amount: " + c.getTotalAmount());
-            // System.out.println("Bookings:");
-            ArrayList<String> bookingIds = new ArrayList<String>();
-            for (Booking b : c.getBookings()) {
-                bookingIds.add(b.getBookingId());
-            }
-
-            System.out.printf("    bookings = [%s]\n", String.join(", ", bookingIds));
+            usableVar[2] = true;
         }
+        
         // System.out.println("===================================\n\n\n");
 
     }
@@ -409,17 +471,18 @@ public class App {
                         continue;
                     }
 
-                    // Failsafe: Must reserve at least 1 room
+                    // Failsafe: Must reserve at least 1 room or dine-in
                     Boolean recordAble = false;
                     for (int i = 0; i < roomCount; i++) {
-                        if (roomPerDay[i] > 0) {
+                        if (roomPerDay[i] > 0 || mealPerPersonPerDay[i] > 0) { 
                             recordAble = true;
                         }
                     }
                     if (!recordAble) {
-                        System.out.printf(
-                                "\nBooking: %s has no room reserved, booking with 0 room reserved are not allowed, skipping booking %s\n",
-                                bookingId, bookingId);
+                        System.out.printf("\nBooking: %s has no room reserved, booking with 0 room reserved are not allowed, skipping booking %s\n",
+                            bookingId, 
+                            bookingId
+                        );
                         continue;
                     }
 
@@ -477,6 +540,17 @@ public class App {
             System.err.println(e);
 
             return null;
+        }
+    }
+
+    public static boolean failCheck(String inPath) {
+        try{
+            File fileData = new File(inPath);
+            Scanner fileScan = new Scanner(fileData);
+            fileScan.close();
+            return true;
+        } catch(Exception e) {
+            return false;
         }
     }
 }
