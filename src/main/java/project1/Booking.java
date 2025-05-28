@@ -133,7 +133,7 @@ public class Booking {
 
         //System.out.println("Total room price++: " + roomTotal);
         String stringRoomTotal =  "total room price++";
-        System.out.printf("             %-20s  =   %,10.2f \n", stringRoomTotal, roomTotal);
+        System.out.printf("             %-20s  =   %,12.2f \n", stringRoomTotal, roomTotal);
 
         for (int i = 0; i < mealPerPersonPerDay.length; i++) {
             String mealCode = mealCodes.get(i);
@@ -149,7 +149,7 @@ public class Booking {
 
        // System.out.println("Total meal price: " + mealTotal);
         String stringMealTotal =  "total meal price";
-        System.out.printf("             %-20s  =   %,10.2f \n", stringMealTotal, mealTotal);
+        System.out.printf("             %-20s  =   %,12.2f \n", stringMealTotal, mealTotal);
 
         double subTotal = roomTotal + mealTotal;
         double discountPercent = 0;
@@ -157,7 +157,7 @@ public class Booking {
 
         //System.out.println("Sub total: " + subTotal);
         String stringSubTotal =  "sub-total";
-        System.out.printf("             %-20s  =   %,10.2f \n", stringSubTotal, subTotal);
+        System.out.printf("             %-20s  =   %,12.2f \n", stringSubTotal, subTotal);
 
         for (Discount discount : discounts) {
             if (subTotal >= discount.getMinSubTotal()) {
@@ -171,14 +171,14 @@ public class Booking {
         //System.out.println("Total after discount: " + (subTotal - discountAmount));
 
         if(discountPercent == 0) {
-            System.out.printf("             %-20s  =   %,10.2f \n", "discount", discountAmount);
+            System.out.printf("             %-20s  =   %,12.2f \n", "discount", discountAmount);
         } else {
-            System.out.printf("             %-10s%-10s  =   %,10.2f \n", "discount", String.format("%.1f%%", discountPercent), discountAmount);
+            System.out.printf("             %-10s%-10s  =   %,12.2f \n", "discount", String.format("%.1f%%", discountPercent), discountAmount);
         }
 
         double total = subTotal - discountAmount;
 
-        System.out.printf("             %-20s  =   %,10.2f \n", "total", total);
+        System.out.printf("             %-20s  =   %,12.2f \n", "total", total);
 
         this.subTotalAmount = subTotal;
         this.totalAmount = total;
