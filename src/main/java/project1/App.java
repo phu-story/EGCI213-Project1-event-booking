@@ -1,4 +1,12 @@
 package project1;
+/* 
+   Made with ♥ by,
+
+   Yoswaris Lawpaiboon,  6681170
+   Pasin Piyavej,        6681187
+   Praepilai Phetsamsri, 6681374
+   
+*/
 
 import java.io.File;
 import java.util.ArrayList;
