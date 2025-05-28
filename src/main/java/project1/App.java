@@ -532,7 +532,23 @@ public class App {
                     if (potentialInvalidRoomDay == true) {
                         System.out.printf("\nBooking: %s has invalid room and day reservation format, unsolvable\n",
                             bookingId);
-                        continue;
+                        System.out.println("Do want to enter data manually?");
+                        System.out.println("(Enter y to accept OR other key to skip this booking)");
+                        String temp = keyboardIn.next();
+                        if (temp.toLowerCase().equals("y")) {
+                            for(int i = 0; i < roomCount; i++){
+                                System.out.printf("Room R%d: ", i);
+                                try{
+                                    
+                                    roomPerDay[i] = keyboardIn.nextInt();
+                                    System.out.println();
+                                } catch(Exception e) {
+                                    System.out.printf("Fatal: An input is non-natual number, skip booking %s\n", bookingId);
+                                }
+                            }
+                        } else {
+                            continue;
+                        }
                     }
 
                     if (person <= 0) {
