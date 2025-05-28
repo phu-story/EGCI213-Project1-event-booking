@@ -17,39 +17,47 @@ public class App {
         String bookingFileName = path + "bookings_errors.txt";
         String discountFileName = path + "discounts.txt";
         boolean[] usableVar = {false, false, false}; // item, discount, booking
+        Scanner keyboardIn = new Scanner(System.in);
 
         /*===================Item section===================*/
 
         // Buffer data from items.txt into list
 
         List<Item> items = loadItems(itemFileName);
-        if (items == null) {
-            System.out.println("Failed to load items.");
-            System.out.println("Customer's booking had not been charged");
-            // return;
-        } else {
-            // Print everything in buffer
-            // Room type section
-            for (Item item : items) {
-                if (item.getItemType() == ItemType.ROOM) {
-                    System.out.printf("%s, %-25s%2s Rate (per day) = %,9.2f%2s Rate++ = %,9.2f\n",
-                            item.getCode(),
-                            item.getName(), " ",
-                            item.getUnitPrice(), " ",
-                            item.getPriceWithRate());
-                }
+        while (items == null) {
+            System.out.printf("Determined item list file path cannot be read (Current path: %s)\n", itemFileName);
+            System.out.println("Caution: Customer's booking will not been charged!\n");
+            System.out.println("Do you want to enter new items list file path?");
+            System.out.println("(Enter new file name or 0 to exit program)");
+            String temp = keyboardIn.next();
+            if (!temp.equals("0")) {
+                itemFileName = path + temp;
+                items = loadItems(itemFileName);
+            } else {
+                System.exit(0);
             }
-
-            // Meal menu section
-            System.out.println("");
-            for (Item item : items) {
-                if (item.getItemType() == ItemType.MEAL) {
-                    System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(),
-                            item.getUnitPrice());
-                }
-            }
-            usableVar[0] = true;
         }
+        // Print everything in buffer
+        // Room type section
+        for (Item item : items) {
+            if (item.getItemType() == ItemType.ROOM) {
+                System.out.printf("%s, %-25s%2s Rate (per day) = %,9.2f%2s Rate++ = %,9.2f\n",
+                        item.getCode(),
+                        item.getName(), " ",
+                        item.getUnitPrice(), " ",
+                        item.getPriceWithRate());
+            }
+        }
+
+        // Meal menu section
+        System.out.println("");
+        for (Item item : items) {
+            if (item.getItemType() == ItemType.MEAL) {
+                System.out.printf("%s, %-12s    rate (per person per day) = %,6.2f \n", item.getCode(), item.getName(),
+                        item.getUnitPrice());
+            }
+        }
+        usableVar[0] = true;
 
         
 
@@ -60,7 +68,19 @@ public class App {
         List<Discount> discounts = loadDiscount(discountFileName);
         if (discounts == null) {
             System.out.println("Failed to load discounts.");
-            System.out.println("No discount has been applied");
+            while (discounts == null) {
+                System.out.printf("\nDetermined discount data file path cannot be read (Current path: %s)\n", discountFileName);
+                System.out.println("No discount will not be apply\n");
+                System.out.println("Do you want to enter new items list file path?");
+                System.out.println("(Enter new file name or 0 to ignore discount program)");
+                String temp = keyboardIn.next();
+                if (!temp.equals("0")) {
+                    discountFileName = path + temp;
+                    discounts = loadDiscount(discountFileName);
+                } else {
+                    break;
+                }
+            }
             // return;
         } else {
             // Sort discount list first
@@ -87,67 +107,88 @@ public class App {
 
         // Load booking file
         System.out.println("");
-        List<Booking> booking;
-        if (usableVar[1] == false) { // FailSafe: Discount file can't read
-            List<Discount> nonCertainDiscount = new ArrayList<>();
-            List<Item> nonCertainItem = new ArrayList<>();
+
+        List<Booking> booking = null;
+        while (booking == null) {
+            // Go through each variable, making sure everythings work
+            List<Item> itemsToLoad = new ArrayList<>();
             if (usableVar[0] == false) {
-                nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
-            } else nonCertainItem = items;
+                itemsToLoad.add(new Item("?", "?", 0, ItemType.ROOM));
+            } else {
+                itemsToLoad.addAll(items);
+            }
+
+            List<Discount> discountsToLoad = new ArrayList<>();
             if (usableVar[1] == false) {
-                nonCertainDiscount.add(new Discount(0, 0));
-            } else nonCertainDiscount = discounts;
-            booking = loadBooking(bookingFileName, nonCertainItem, nonCertainDiscount);
-        } else {
-            booking = loadBooking(bookingFileName, items, discounts);
+                discountsToLoad.add(new Discount(0, 0));
+            } else {
+                discountsToLoad.addAll(discounts);
+            }
+
+            // Try read booking file, with each variable expressed
+            booking = loadBooking(bookingFileName, itemsToLoad, discountsToLoad, keyboardIn);
+
+            // Failsafe: Booking file Path invalid
+            if (booking == null) {
+                System.out.println("Failed to load booking.\n");
+                System.out.printf(
+                    "Determined booking list file path cannot be read (Current path: %s)%n",
+                    bookingFileName
+                );
+                System.out.println("Caution: Failing to read booking file will exit program!");
+                System.out.print("Enter new file name or 0 to exit program: ");
+
+                String temp = keyboardIn.next();
+                if (temp.equals("0")) {
+                    System.exit(0);
+                } else {
+                    bookingFileName = path + temp;
+                }
+            }
+
         }
 
-        if (booking == null) {
-            System.out.println("Failed to load booking.");
-            // return;
-        } else {
-            // Print each booking summarize
-            System.out.println("\n===== Booking Processing =====");
-            for (Booking b : booking) {
-                int[] roomPerDay = b.getRoomPerDay();
-                int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
-                System.out.printf("Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
-                    b.getBookingId(), 
-                    b.getCustomerId(), 
-                    b.getDay(), 
-                    b.getPerson(), 
-                    Arrays.toString(roomPerDay),
-                    Arrays.toString(mealPerPersonPerDay
-                ));
-                // System.out.println("Booking ID: " + b.getBookingId());
-                // System.out.println("Customer ID: " + b.getCustomerId());
-                // System.out.println("Day: " + b.getDay());
-                // System.out.println("Room per day: " + roomPerDay[0] + ", " + roomPerDay[1] +
-                // ", " + roomPerDay[2]);
-                // System.out.println("Person: " + b.getPerson());
-                // System.out.println("Meal per person per day: " + mealPerPersonPerDay[0] + ",
-                // " + mealPerPersonPerDay[1]
-                // + ", " + mealPerPersonPerDay[2]);
-    
-                // Invoice section
-                if (usableVar[0] == false || usableVar[1] == false) {        // FailSafe: Discount file can't read
-                    List<Discount> nonCertainDiscount = new ArrayList<>();
-                    List<Item> nonCertainItem = new ArrayList<>();
-                    if (usableVar[0] == false) {
-                        nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
-                    } else nonCertainItem = items;
-                    if (usableVar[1] == false) {
-                        nonCertainDiscount.add(new Discount(0, 0));
-                    } else nonCertainDiscount = discounts;
-    
-                    b.calculateTotalAmount(nonCertainItem, nonCertainDiscount);
-                } else {
-                    b.calculateTotalAmount(items, discounts);
-                }
-                System.out.println("");
-    
-                // System.out.println("Total Amount: " + b.getTotalAmount());
+        // Print each booking summarize
+        System.out.println("\n===== Booking Processing =====");
+        for (Booking b : booking) {
+            int[] roomPerDay = b.getRoomPerDay();
+            int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
+            System.out.printf("Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
+                b.getBookingId(), 
+                b.getCustomerId(), 
+                b.getDay(), 
+                b.getPerson(), 
+                Arrays.toString(roomPerDay),
+                Arrays.toString(mealPerPersonPerDay
+            ));
+            // System.out.println("Booking ID: " + b.getBookingId());
+            // System.out.println("Customer ID: " + b.getCustomerId());
+            // System.out.println("Day: " + b.getDay());
+            // System.out.println("Room per day: " + roomPerDay[0] + ", " + roomPerDay[1] +
+            // ", " + roomPerDay[2]);
+            // System.out.println("Person: " + b.getPerson());
+            // System.out.println("Meal per person per day: " + mealPerPersonPerDay[0] + ",
+            // " + mealPerPersonPerDay[1]
+            // + ", " + mealPerPersonPerDay[2]);
+
+            // Invoice section
+            if (usableVar[0] == false || usableVar[1] == false) {        // FailSafe: Discount file can't read
+                List<Discount> nonCertainDiscount = new ArrayList<>();
+                List<Item> nonCertainItem = new ArrayList<>();
+                if (usableVar[0] == false) {
+                    nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
+                } else nonCertainItem = items;
+                if (usableVar[1] == false) {
+                    nonCertainDiscount.add(new Discount(0, 0));
+                } else nonCertainDiscount = discounts;
+
+                b.calculateTotalAmount(nonCertainItem, nonCertainDiscount);
+            } else {
+                b.calculateTotalAmount(items, discounts);
             }
+            System.out.println("");
+
+            // System.out.println("Total Amount: " + b.getTotalAmount());
         }
 
 
@@ -182,8 +223,9 @@ public class App {
             usableVar[2] = true;
         }
         
+        // End of Program
         // System.out.println("===================================\n\n\n");
-
+        keyboardIn.close();
     }
 
     public static List<Item> loadItems(String fileName) {
@@ -263,7 +305,7 @@ public class App {
         }
     }
 
-    public static List<Booking> loadBooking(String fileName, List<Item> items, List<Discount> discounts) {
+    public static List<Booking> loadBooking(String fileName, List<Item> items, List<Discount> discounts, Scanner keyboardIn) {
         try {
             int roomCount = 0;
             int mealCount = 0;
@@ -280,7 +322,6 @@ public class App {
             File fileData = new File(fileName);
 
             Scanner fileScan = new Scanner(fileData);
-            Scanner keyboardIn = new Scanner(System.in);
             System.out.println("Read from " + fileData.getPath());
             List<Booking> bookings = new ArrayList<>();
 
@@ -304,9 +345,9 @@ public class App {
                     // Handle non-int bookingID
                     if (!Character.isDigit(bookingId.charAt(1))) {
                         System.out.printf(
-                                "\nBooking: %s format is inappropriate, do you want to continue? (Acceptable input e.g. B1, B2,...)",
+                                "\nBooking: %s format is inappropriate, do you want to continue?\n(Acceptable input i.e. B1, B2,...)",
                                 bookingId);
-                        System.out.println("\nEnter y to continue OR other key to skip this Booking");
+                        System.out.println("\n(Enter y to continue OR other key to skip this Booking)");
                         String input = keyboardIn.next().toLowerCase();
                         if (!input.equals("y")) {
                             continue;
@@ -316,11 +357,11 @@ public class App {
                     // Handle non-int customerID
                     if (!Character.isDigit(customerId.charAt(1))) {
                         System.out.printf(
-                                "\nBooking: %s customer code format is inappropriate, do you want to continue?\n (Acceptable input e.g. C1, C2,... but the code read as %s)\n",
+                                "\nBooking: %s customer code format is inappropriate, do you want to continue?\n(Acceptable input i.e. C1, C2,... but the code read as %s)\n",
                                 bookingId,
                                 customerId
                             );
-                        System.out.println("Enter y to continue OR other key to skip this Booking");
+                        System.out.println("(Enter y to continue OR other key to skip this Booking)");
                         String input = keyboardIn.next().toLowerCase();
                         if (!input.equals("y")) {
                             continue;
@@ -345,9 +386,9 @@ public class App {
                         }
                     } catch (Exception e) { // Ask user to enter again
                         System.out.printf(
-                                "\nBooking: %s contain invalid numbers of reservation day input (Accepetable input e.g. 1, 2, 3,... but you enter %s days)\n",
+                                "\nBooking: %s contain invalid numbers of reservation day input\n(Acceptable input i.e. 1, 2, 3,... but you enter %s days)\n",
                                 bookingId, parts[2].trim());
-                        System.out.println("Input new numbers of reservation day or input 0 to skip this booking");
+                        System.out.println("(Enter new numbers of reservation day or input 0 to skip this booking)");
                         try {
                             day = keyboardIn.nextInt();
                         } catch (Exception f) {
@@ -385,13 +426,13 @@ public class App {
                             continue;
                         }
                         System.out.printf(
-                                "\nBooking: %s contain invalid room type and day format (Proper input e.g. 1:2:3)\n",
+                                "\nBooking: %s contain invalid room type and day format (Proper input i.e. 1:2:3)\n",
                                 bookingId);
                         for (int i = 0; i < roomCount; i++) {
                             System.out.printf("Program read as %s: %d days\n", items.get(i).getName(),
                                     bufferPosInput[i]);
                         }
-                        System.out.println("Enter y to accpet, OR other key to skip");
+                        System.out.println("(Enter y to accpet, OR other key to skip)");
                         String input = keyboardIn.next().toLowerCase();
                         if (input.equals("y")) {
                             for (int i = 0; i < roomCount; i++) {
@@ -409,9 +450,9 @@ public class App {
                     } catch (Exception e) { // Ask user to input again
                         if (parts.length == (roomCount + mealCount - 2)) {
                             System.out.printf(
-                                    "\nBooking: %s contain invalid numbers of guest (Accepetable input e.g. 1, 2, 3,... but you enter: %s)\n",
+                                    "\nBooking: %s contain invalid numbers of guest\n(Accepetable input i.e. 1, 2, 3,... but you enter: %s)\n",
                                     bookingId, parts[4].trim());
-                            System.out.println("Input new numbers of guest or input 0 to skip this booking");
+                            System.out.println("(Enter new numbers of guest or input 0 to skip this booking)");
                             try {
                                 person = keyboardIn.nextInt();
                             } catch (Exception f) {
@@ -444,13 +485,13 @@ public class App {
                             }
                         }
                         System.out.printf(
-                                "\nBooking: %s contain invalid menu type and day format (Proper input e.g. 1:2:3)\n",
+                                "\nBooking: %s contain invalid menu type and day format (Proper input i.e. 1:2:3)\n",
                                 bookingId);
                         for (int i = 0; i < mealCount; i++) {
                             System.out.printf("Program read as %s: %d ea/person/day\n",
                                     items.get(roomCount + i).getName(), bufferPosInput[i]);
                         }
-                        System.out.println("Enter y to accept, OR other key to skip");
+                        System.out.println("(Enter y to accept, OR other key to skip)");
                         String input = keyboardIn.next().toLowerCase();
                         if (input.equals("y")) {
                             for (int i = 0; i < mealCount; i++) {
@@ -462,15 +503,16 @@ public class App {
                     // Final inspection
                     // Failsafe: Person != 0
                     if (person <= 0) {
-                        System.out.printf("\nBooking: %s has invalid input guest, booking with non natural number of guest are not allowed (Enter number of guest, enter 0 to skip this booking)\n",
+                        System.out.printf("\nBooking: %s has invalid input guest, booking with non-natural number of guest are not allowed\n",
                                 bookingId);
-                        System.out.printf("Acceptable format (i.e. 1,2,3,..) but you entered %d\n", person);
+                        System.out.printf("(Acceptable format (i.e. 1,2,3,..) but you entered %d)\n", person);
+                        System.out.println("(Enter number of guest, enter 0 to skip this booking)");
                         try {
                             person = keyboardIn.nextInt();
                         } catch (Exception e) {
                             System.out.printf("Invalid input type, skipping %s\n", bookingId);
+                            continue;
                         }
-                        continue;
                     }
 
                     // Failsafe: Must reserve at least 1 room or dine-in
@@ -501,7 +543,6 @@ public class App {
                 }
             }
 
-            keyboardIn.close();
             fileScan.close();
 
             return bookings;
