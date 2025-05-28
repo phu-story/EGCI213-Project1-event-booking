@@ -14,7 +14,7 @@ public class App {
     public static void main(String[] args) {
         String path = "src/main/java/project1/input/";
         String itemFileName = path + "items.txt";
-        String bookingFileName = path + "bookings.txt";
+        String bookingFileName = path + "bookings_errors.txt";
         String discountFileName = path + "discounts.txt";
         boolean[] usableVar = {false, false, false}; // item, discount, booking
 
@@ -306,7 +306,7 @@ public class App {
                         System.out.printf(
                                 "\nBooking: %s format is inappropriate, do you want to continue? (Acceptable input e.g. B1, B2,...)",
                                 bookingId);
-                        System.out.println("\nEnter y to continue or other to skip this Booking");
+                        System.out.println("\nEnter y to continue OR other key to skip this Booking");
                         String input = keyboardIn.next().toLowerCase();
                         if (!input.equals("y")) {
                             continue;
@@ -316,9 +316,11 @@ public class App {
                     // Handle non-int customerID
                     if (!Character.isDigit(customerId.charAt(1))) {
                         System.out.printf(
-                                "\nBooking: %s customer format is inappropriate, do you want to continue? (Acceptable input e.g. C1, C2,...)",
-                                customerId);
-                        System.out.println("\nEnter y to continue or other to skip this Booking");
+                                "\nBooking: %s customer code format is inappropriate, do you want to continue?\n (Acceptable input e.g. C1, C2,... but the code read as %s)\n",
+                                bookingId,
+                                customerId
+                            );
+                        System.out.println("Enter y to continue OR other key to skip this Booking");
                         String input = keyboardIn.next().toLowerCase();
                         if (!input.equals("y")) {
                             continue;
@@ -389,7 +391,7 @@ public class App {
                             System.out.printf("Program read as %s: %d days\n", items.get(i).getName(),
                                     bufferPosInput[i]);
                         }
-                        System.out.println("Enter y to accpet, or other");
+                        System.out.println("Enter y to accpet, OR other key to skip");
                         String input = keyboardIn.next().toLowerCase();
                         if (input.equals("y")) {
                             for (int i = 0; i < roomCount; i++) {
@@ -448,7 +450,7 @@ public class App {
                             System.out.printf("Program read as %s: %d ea/person/day\n",
                                     items.get(roomCount + i).getName(), bufferPosInput[i]);
                         }
-                        System.out.println("Enter y to accept, or other");
+                        System.out.println("Enter y to accept, OR other key to skip");
                         String input = keyboardIn.next().toLowerCase();
                         if (input.equals("y")) {
                             for (int i = 0; i < mealCount; i++) {
@@ -459,10 +461,10 @@ public class App {
 
                     // Final inspection
                     // Failsafe: Person != 0
-                    if (person == 0) {
-                        System.out.printf(
-                                "\nBooking: %s has no guest, booking with 0 guest are not allowed (Enter number of guest, enter 0 to skip this booking)\n",
+                    if (person <= 0) {
+                        System.out.printf("\nBooking: %s has invalid input guest, booking with non natural number of guest are not allowed (Enter number of guest, enter 0 to skip this booking)\n",
                                 bookingId);
+                        System.out.printf("Acceptable format (i.e. 1,2,3,..) but you entered %d\n", person);
                         try {
                             person = keyboardIn.nextInt();
                         } catch (Exception e) {
