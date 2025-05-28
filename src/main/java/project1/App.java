@@ -409,8 +409,19 @@ public class App {
 
                     int[] roomPerDay = new int[roomCount]; // Declare array storing R1:R2:R3, day reservered
                     String[] roomPerDayRaw = parts[3].trim().split(":"); // Organized format
+                    boolean potentialInvalidRoomDay = false;
+                    if (roomPerDayRaw.length != 3) {
+                        potentialInvalidRoomDay = true;
+                    }
 
                     // Failsafe: Invalid rooms and days format
+                    // if (roomPerDayRaw.length != 4) {
+                    //     System.out.printf(
+                    //                 "\nBooking: %s contain invalid room type and day format, which unsolvable, skipping booking %s\n",
+                    //                 bookingId, bookingId);
+                    //     continue;
+                    // }
+
                     try {
                         for (int i = 0; i < roomPerDayRaw.length; i++) {
                             roomPerDay[i] = Integer.parseInt(roomPerDayRaw[i].trim()); // Convert to int
@@ -427,6 +438,7 @@ public class App {
                                     continue;
                                 }
                             }
+                            potentialInvalidRoomDay = false;
                         } catch (Exception f) { // Exit when available too less compare to all room option
                             System.out.printf(
                                     "\nBooking: %s contain invalid room type and day format, which unsolvable, skipping booking %s\n",
@@ -446,6 +458,7 @@ public class App {
                             for (int i = 0; i < roomCount; i++) {
                                 roomPerDay[i] = bufferPosInput[i];
                             }
+                            potentialInvalidRoomDay = false;
                         } else {
                             continue;
                         }
@@ -463,6 +476,10 @@ public class App {
                             System.out.println("(Enter new numbers of guest or input 0 to skip this booking)");
                             try {
                                 person = keyboardIn.nextInt();
+                                if (person == 0) {
+                                    continue;
+                                }
+                                potentialInvalidRoomDay = false;
                             } catch (Exception f) {
                                 System.out.printf("Input still contain inappropriate format, skip %s booking\n",
                                         bookingId);
@@ -476,8 +493,7 @@ public class App {
                     // Failsafe: Meals and person and day format
                     try {
                         for (int i = 0; i < mealPerPersonPerDayRaw.length; i++) {
-                            mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim()); // Convert to
-                                                                                                         // int
+                            mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim()); // Convert to int
                         }
                     } catch (Exception e) { // Try read data from bad seperator
                         int[] bufferPosInput = new int[mealCount];
@@ -505,11 +521,20 @@ public class App {
                             for (int i = 0; i < mealCount; i++) {
                                 mealPerPersonPerDay[i] = bufferPosInput[i];
                             }
+                            potentialInvalidRoomDay = false;
+                        } else {
+                            continue;
                         }
                     }
 
                     // Final inspection
                     // Failsafe: Person != 0
+                    if (potentialInvalidRoomDay == true) {
+                        System.out.printf("\nBooking: %s has invalid room and day reservation format, unsolvable\n",
+                            bookingId);
+                        continue;
+                    }
+
                     if (person <= 0) {
                         System.out.printf("\nBooking: %s has invalid input guest, booking with non-natural number of guest are not allowed\n",
                                 bookingId);
@@ -528,6 +553,14 @@ public class App {
                     for (int i = 0; i < roomCount; i++) {
                         if (roomPerDay[i] > 0 || mealPerPersonPerDay[i] > 0) { 
                             recordAble = true;
+                        }
+                        if (roomPerDay[i] < 0 || mealPerPersonPerDay[i] < 0) {
+                            System.out.printf("\nBooking: %s contain negative data value, not solvable, skipping %s\n",
+                                bookingId, 
+                                bookingId
+                            );
+                            recordAble = false;
+                            break;
                         }
                     }
                     if (!recordAble) {
