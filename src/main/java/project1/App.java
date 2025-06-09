@@ -22,12 +22,12 @@ public class App {
     public static void main(String[] args) {
         String path = "src/main/java/project1/input/";
         String itemFileName = path + "items.txt";
-        String bookingFileName = path + "bookings_errors.txt";
+        String bookingFileName = path + "bookings.txt";
         String discountFileName = path + "discounts.txt";
-        boolean[] usableVar = {false, false, false}; // item, discount, booking
+        boolean[] usableVar = { false, false, false }; // item, discount, booking
         Scanner keyboardIn = new Scanner(System.in);
 
-        /*===================Item section===================*/
+        /* ===================Item section=================== */
 
         // Buffer data from items.txt into list
 
@@ -67,9 +67,7 @@ public class App {
         }
         usableVar[0] = true;
 
-        
-
-        /*===================Discount Section===================*/
+        /* ===================Discount Section=================== */
 
         // Buffer data from discounts.txt
         System.out.println("");
@@ -77,7 +75,8 @@ public class App {
         if (discounts == null) {
             System.out.println("Failed to load discounts.");
             while (discounts == null) {
-                System.out.printf("\nDetermined discount data file path cannot be read (Current path: %s)\n", discountFileName);
+                System.out.printf("\nDetermined discount data file path cannot be read (Current path: %s)\n",
+                        discountFileName);
                 System.out.println("No discount will not be apply\n");
                 System.out.println("Do you want to enter new items list file path?");
                 System.out.println("(Enter new file name or 0 to ignore discount program)");
@@ -101,17 +100,14 @@ public class App {
 
             // Then, print here
             for (Discount discount : discountsCopy) {
-                System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n", 
-                    discount.getMinSubTotal(),
-                    discount.getDiscountPercent()
-                );
+                System.out.printf("If total bill >= %,10.0f   discount = %4.1f%% \n",
+                        discount.getMinSubTotal(),
+                        discount.getDiscountPercent());
             }
             usableVar[1] = true;
         }
 
-        
-
-        /*===================Booking Section===================*/
+        /* ===================Booking Section=================== */
 
         // Load booking file
         System.out.println("");
@@ -140,9 +136,8 @@ public class App {
             if (booking == null) {
                 System.out.println("Failed to load booking.\n");
                 System.out.printf(
-                    "Determined booking list file path cannot be read (Current path: %s)%n",
-                    bookingFileName
-                );
+                        "Determined booking list file path cannot be read (Current path: %s)%n",
+                        bookingFileName);
                 System.out.println("Caution: Failing to read booking file will exit program!");
                 System.out.print("Enter new file name or 0 to exit program: ");
 
@@ -162,13 +157,12 @@ public class App {
             int[] roomPerDay = b.getRoomPerDay();
             int[] mealPerPersonPerDay = b.getMealPerPersonPerDay();
             System.out.printf("Booking %3s, customer %s  >>  days = %2d, persons = %d, rooms = %s, meals = %s\n",
-                b.getBookingId(), 
-                b.getCustomerId(), 
-                b.getDay(), 
-                b.getPerson(), 
-                Arrays.toString(roomPerDay),
-                Arrays.toString(mealPerPersonPerDay
-            ));
+                    b.getBookingId(),
+                    b.getCustomerId(),
+                    b.getDay(),
+                    b.getPerson(),
+                    Arrays.toString(roomPerDay),
+                    Arrays.toString(mealPerPersonPerDay));
             // System.out.println("Booking ID: " + b.getBookingId());
             // System.out.println("Customer ID: " + b.getCustomerId());
             // System.out.println("Day: " + b.getDay());
@@ -180,15 +174,17 @@ public class App {
             // + ", " + mealPerPersonPerDay[2]);
 
             // Invoice section
-            if (usableVar[0] == false || usableVar[1] == false) {        // FailSafe: Discount file can't read
+            if (usableVar[0] == false || usableVar[1] == false) { // FailSafe: Discount file can't read
                 List<Discount> nonCertainDiscount = new ArrayList<>();
                 List<Item> nonCertainItem = new ArrayList<>();
                 if (usableVar[0] == false) {
                     nonCertainItem.add(new Item("?", "?", 0, ItemType.ROOM));
-                } else nonCertainItem = items;
+                } else
+                    nonCertainItem = items;
                 if (usableVar[1] == false) {
                     nonCertainDiscount.add(new Discount(0, 0));
-                } else nonCertainDiscount = discounts;
+                } else
+                    nonCertainDiscount = discounts;
 
                 b.calculateTotalAmount(nonCertainItem, nonCertainDiscount);
             } else {
@@ -198,7 +194,6 @@ public class App {
 
             // System.out.println("Total Amount: " + b.getTotalAmount());
         }
-
 
         // Summarize each customer's booking
         List<Customer> customers = loadCustomer(booking);
@@ -230,7 +225,7 @@ public class App {
             }
             usableVar[2] = true;
         }
-        
+
         // End of Program
         // System.out.println("===================================\n\n\n");
         keyboardIn.close();
@@ -313,7 +308,8 @@ public class App {
         }
     }
 
-    public static List<Booking> loadBooking(String fileName, List<Item> items, List<Discount> discounts, Scanner keyboardIn) {
+    public static List<Booking> loadBooking(String fileName, List<Item> items, List<Discount> discounts,
+            Scanner keyboardIn) {
         try {
             int roomCount = 0;
             int mealCount = 0;
@@ -367,8 +363,7 @@ public class App {
                         System.out.printf(
                                 "\nBooking: %s customer code format is inappropriate, do you want to continue?\n(Acceptable input i.e. C1, C2,... but the code read as %s)\n",
                                 bookingId,
-                                customerId
-                            );
+                                customerId);
                         System.out.println("(Enter y to continue OR other key to skip this Booking)");
                         String input = keyboardIn.next().toLowerCase();
                         if (!input.equals("y")) {
@@ -379,12 +374,13 @@ public class App {
                     int day = 0;
 
                     // Missing data such as 4.5,0 <- need another ,0
-                    if (parts.length != (roomCount + mealCount - 2)) {
-                        System.out.printf(
-                                "\nBooking: %s contain invalid room type and day format, which unsolvable, skipping booking %s\n",
-                                bookingId, bookingId);
-                        continue;
-                    }
+                    // if (parts.length != (roomCount + mealCount - 2)) {
+                    // System.out.printf(
+                    // "\nBooking: %s contain invalid room type and day format, which unsolvable,
+                    // skipping booking %s\n",
+                    // bookingId, bookingId);
+                    // continue;
+                    // }
 
                     // Failsafe: Invalid day reservation
                     try {
@@ -410,15 +406,15 @@ public class App {
                     int[] roomPerDay = new int[roomCount]; // Declare array storing R1:R2:R3, day reservered
                     String[] roomPerDayRaw = parts[3].trim().split(":"); // Organized format
                     boolean potentialInvalidRoomDay = false;
-                    if (roomPerDayRaw.length != 3) {
+                    if (roomPerDayRaw.length > roomCount) { // If input more than room type
                         potentialInvalidRoomDay = true;
                     }
 
                     // Failsafe: Invalid rooms and days format
-                    // if (roomPerDayRaw.length != 4) {
+                    // if (roomPerDayRaw.length != roomCount) {
                     //     System.out.printf(
-                    //                 "\nBooking: %s contain invalid room type and day format, which unsolvable, skipping booking %s\n",
-                    //                 bookingId, bookingId);
+                    //             "\nBooking: %s contain invalid room type, which unsolvable, skipping booking %s\n",
+                    //             bookingId, bookingId);
                     //     continue;
                     // }
 
@@ -491,9 +487,17 @@ public class App {
                     String[] mealPerPersonPerDayRaw = parts[5].trim().split(":"); // Organized format
 
                     // Failsafe: Meals and person and day format
+                    // if (mealPerPersonPerDayRaw.length != mealCount) {
+                    //     System.out.printf(
+                    //             "\nBooking: %s contain invalid meal type and day format, which unsolvable, skipping booking %s\n",
+                    //             bookingId, bookingId);
+                    //     continue;
+                    // }
+
                     try {
                         for (int i = 0; i < mealPerPersonPerDayRaw.length; i++) {
-                            mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim()); // Convert to int
+                            mealPerPersonPerDay[i] = Integer.parseInt(mealPerPersonPerDayRaw[i].trim()); // Convert to
+                                                                                                         // int
                         }
                     } catch (Exception e) { // Try read data from bad seperator
                         int[] bufferPosInput = new int[mealCount];
@@ -531,19 +535,20 @@ public class App {
                     // Failsafe: Person != 0
                     if (potentialInvalidRoomDay == true) {
                         System.out.printf("\nBooking: %s has invalid room and day reservation format, unsolvable\n",
-                            bookingId);
+                                bookingId);
                         System.out.println("Do want to enter data manually?");
                         System.out.println("(Enter y to accept OR other key to skip this booking)");
                         String temp = keyboardIn.next();
                         if (temp.toLowerCase().equals("y")) {
-                            for(int i = 0; i < roomCount; i++){
+                            for (int i = 0; i < roomCount; i++) {
                                 System.out.printf("Room R%d: ", i);
-                                try{
-                                    
+                                try {
+
                                     roomPerDay[i] = keyboardIn.nextInt();
                                     System.out.println();
-                                } catch(Exception e) {
-                                    System.out.printf("Fatal: An input is non-natual number, skip booking %s\n", bookingId);
+                                } catch (Exception e) {
+                                    System.out.printf("Fatal: An input is non-natual number, skip booking %s\n",
+                                            bookingId);
                                 }
                             }
                         } else {
@@ -552,7 +557,8 @@ public class App {
                     }
 
                     if (person <= 0) {
-                        System.out.printf("\nBooking: %s has invalid input guest, booking with non-natural number of guest are not allowed\n",
+                        System.out.printf(
+                                "\nBooking: %s has invalid input guest, booking with non-natural number of guest are not allowed\n",
                                 bookingId);
                         System.out.printf("(Acceptable format (i.e. 1,2,3,..) but you entered %d)\n", person);
                         System.out.println("(Enter number of guest, enter 0 to skip this booking)");
@@ -567,23 +573,22 @@ public class App {
                     // Failsafe: Must reserve at least 1 room or dine-in
                     Boolean recordAble = false;
                     for (int i = 0; i < roomCount; i++) {
-                        if (roomPerDay[i] > 0 || mealPerPersonPerDay[i] > 0) { 
+                        if (roomPerDay[i] > 0 || mealPerPersonPerDay[i] > 0) {
                             recordAble = true;
                         }
                         if (roomPerDay[i] < 0 || mealPerPersonPerDay[i] < 0) {
                             System.out.printf("\nBooking: %s contain negative data value, not solvable, skipping %s\n",
-                                bookingId, 
-                                bookingId
-                            );
+                                    bookingId,
+                                    bookingId);
                             recordAble = false;
                             break;
                         }
                     }
                     if (!recordAble) {
-                        System.out.printf("\nBooking: %s has no room reserved, booking with 0 room reserved are not allowed, skipping booking %s\n",
-                            bookingId, 
-                            bookingId
-                        );
+                        System.out.printf(
+                                "\nBooking: %s has no room reserved, booking with 0 room reserved are not allowed, skipping booking %s\n",
+                                bookingId,
+                                bookingId);
                         continue;
                     }
 
@@ -644,12 +649,12 @@ public class App {
     }
 
     public static boolean failCheck(String inPath) {
-        try{
+        try {
             File fileData = new File(inPath);
             Scanner fileScan = new Scanner(fileData);
             fileScan.close();
             return true;
-        } catch(Exception e) {
+        } catch (Exception e) {
             return false;
         }
     }
